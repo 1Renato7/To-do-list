@@ -1,0 +1,29 @@
+.todo-container {
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    text-align: center;
+    margin-top: 100px;
+}
+
+h1 {
+    font-size: 50px;
+    color: #d0d0d0;
+}
+
+ul{
+    padding: 0;
+}
+
+li {
+    list-style: none;
+    background-color: #d0d0d0;
+    margin: 10px auto;
+    padding: 10px;
+    border-radius: 5px;
+    width: 300px;
+    display: flex;
+    align-items: center;
+}
+.text {
+    flex: 1;
+    color: #333;
+}

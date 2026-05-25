@@ -1,17 +1,24 @@
-import React, { useState } from 'react'; 
+import React, { useState, createContext, useContext, useEffect } from 'react'; 
+import './To-do-list.css';
 
-function ToDoList() {
-    const [tasks, setTasks] = useState([]);
-    const [newTask, setNewTask] = useState('');
+const TaskContext = createContext();
 
-    const handleInputChange = (event) => {
-        setNewTask(event.target.value);
-    }
+export const useTaskContext = () => useContext(TaskContext);
 
-    const addTask = () => {
+export const TaskProvider = ({ children }) => {
+
+    const [tasks, setTasks] = useState(() => {
+        const savedTasks = localStorage.getItem('mytasks');
+        return savedTasks ? JSON.parse(savedTasks) : [];
+    });
+
+    useEffect(() => {
+        localStorage.setItem('mytasks', JSON.stringify(tasks));
+    }, [tasks]);
+
+    const addTask = (newTask) => {
         if (newTask.trim() !== '') {
             setTasks([...tasks, newTask]);
-            setNewTask('');
         }
     };
 
@@ -36,30 +43,50 @@ function ToDoList() {
         }
     };
 
+    return (<TaskContext.Provider value={{ tasks, addTask, deleteTask, movePriorityUp, movePriorityDown }}>
+        {children}
+    </TaskContext.Provider>);
+    
+}
+
+function ToDoList() {
+    const { tasks, addTask, deleteTask, movePriorityUp, movePriorityDown } = useTaskContext();
+
+    const handleInputChange = (event) => {
+        setNewTask(event.target.value);
+    }
+
+    const handleAddTaskClick = () => {
+        addTask(newTask);
+        setNewTask('');
+    }
+
+    const [newTask, setNewTask] = useState('');
+
     return (
-        <div>
+        <div className="todo-container">
             <h1>To-Do List</h1>
             <div>
-                <input
+                <input className='input-bar'
                     type="text"
                     value={newTask}
                     onChange={handleInputChange}
                     placeholder="Digite uma nova tarefa"
                 />
-                <button onClick={addTask}>Adicionar</button>
+                <button className="add-button" onClick={handleAddTaskClick}>Add</button>
             </div>
-            <ul>
+            <ul className='task-list'>
                 {tasks.map((task, index) => (
                     <li key={index}>
-                        {task}
-                        <button onClick={() => movePriorityUp(index)}>↑</button>
-                        <button onClick={() => movePriorityDown(index)}>↓</button>
-                        <button onClick={() => deleteTask(index)}>Feito</button>
+                        <span className="text">{task}</span>
+                        <button className="up-button" onClick={() => movePriorityUp(index)}>↑</button>
+                        <button className="down-button" onClick={() => movePriorityDown(index)}>↓</button>
+                        <button className="done-button" onClick={() => deleteTask(index)}>✓</button>
                     </li>
                 ))}
             </ul>
         </div>
     );
-}
+};
 
 export default ToDoList;

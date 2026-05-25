@@ -82,7 +82,7 @@ function ToDoList() {
             <h1>To-Do List</h1>
             <div className="auth-section">
                 {!accessToken ? (
-                    <button onClick={() => loginComGoogle} className="google-login-btn">
+                    <button onClick={() => loginComGoogle()} className="google-login-btn">
                         Vincular Google Calendar
                     </button>
                 ) : (

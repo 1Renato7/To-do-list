@@ -1,5 +1,6 @@
 import React, { useState, createContext, useContext, useEffect } from 'react'; 
 import './To-do-list.css';
+import { useGoogleLogin } from '@react-oauth/google';
 
 const TaskContext = createContext();
 
@@ -11,6 +12,8 @@ export const TaskProvider = ({ children }) => {
         const savedTasks = localStorage.getItem('mytasks');
         return savedTasks ? JSON.parse(savedTasks) : [];
     });
+
+    const [accessToken, setAccessToken] = useState(null);
 
     useEffect(() => {
         localStorage.setItem('mytasks', JSON.stringify(tasks));
@@ -43,14 +46,14 @@ export const TaskProvider = ({ children }) => {
         }
     };
 
-    return (<TaskContext.Provider value={{ tasks, addTask, deleteTask, movePriorityUp, movePriorityDown }}>
+    return (<TaskContext.Provider value={{ tasks, addTask, deleteTask, movePriorityUp, movePriorityDown, accessToken, setAccessToken }}>
         {children}
     </TaskContext.Provider>);
     
 }
 
 function ToDoList() {
-    const { tasks, addTask, deleteTask, movePriorityUp, movePriorityDown } = useTaskContext();
+    const { tasks, addTask, deleteTask, movePriorityUp, movePriorityDown, accessToken, setAccessToken } = useTaskContext();
 
     const handleInputChange = (event) => {
         setNewTask(event.target.value);
@@ -61,6 +64,17 @@ function ToDoList() {
         setNewTask('');
     }
 
+    const login = useGoogleLogin({
+        onSuccess: (tokenResponse) => {
+            console.log('Login Success:', tokenResponse);
+            setAccessToken(tokenResponse.access_token);
+        },
+        onError: (error) => {
+            console.log('Login Failed:', error);
+        },
+        scope: 'https://www.googleapis.com/auth/calendar.events'
+    });
+    
     const [newTask, setNewTask] = useState('');
 
     return (

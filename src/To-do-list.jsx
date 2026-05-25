@@ -64,7 +64,7 @@ function ToDoList() {
         setNewTask('');
     }
 
-    const login = useGoogleLogin({
+    const loginComGoogle = useGoogleLogin({
         onSuccess: (tokenResponse) => {
             console.log('Login Success:', tokenResponse);
             setAccessToken(tokenResponse.access_token);
@@ -74,12 +74,21 @@ function ToDoList() {
         },
         scope: 'https://www.googleapis.com/auth/calendar.events'
     });
-    
+
     const [newTask, setNewTask] = useState('');
 
     return (
         <div className="todo-container">
             <h1>To-Do List</h1>
+            <div className="auth-section">
+                {!accessToken ? (
+                    <button onClick={() => loginComGoogle} className="google-login-btn">
+                        Vincular Google Calendar
+                    </button>
+                ) : (
+                    <span className="logged-in-text">Google Calendar Vinculado</span>
+                )}
+            </div>
             <div>
                 <input className='input-bar'
                     type="text"

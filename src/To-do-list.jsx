@@ -19,9 +19,56 @@ export const TaskProvider = ({ children }) => {
         localStorage.setItem('mytasks', JSON.stringify(tasks));
     }, [tasks]);
 
-    const addTask = (newTask) => {
-        if (newTask.trim() !== '') {
-            setTasks([...tasks, newTask]);
+    const addCalendarEvent = async (taskText, taskDateTime, token) => {
+        const startTime = taskDateTime ? new Date(taskDateTime).toISOString() : new Date();
+        const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        const event = {
+            summary: taskText,
+            description: 'Tarefa agendada',
+            start: {
+                dateTime: startTime.toISOString(),
+                timeZone: userTimeZone,
+            },
+            end: {
+                dateTime: endTime.toISOString(),
+                timeZone: userTimeZone,
+            }
+        };
+
+        try {
+            const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(event)
+            });
+
+            if (response.ok) {
+                console.log('Evento adicionado com sucesso ao Google Calendar');
+            }
+            else {
+                console.error('Erro ao adicionar evento ao Google Calendar:');
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+        }
+    };
+
+    const addTask = async (taskText,  taskDateTime) => {
+        if (taskText.trim() !== '') {
+            const newTaskObject = {
+                text: taskText,
+                dateTime: taskDateTime || null
+            };
+            setTasks(prevTasks => [...prevTasks, newTaskObject]);
+
+            if (accessToken) {
+                await addCalendarEvent(taskText, taskDateTime, accessToken);
+            }
         }
     };
 
@@ -55,13 +102,18 @@ export const TaskProvider = ({ children }) => {
 function ToDoList() {
     const { tasks, addTask, deleteTask, movePriorityUp, movePriorityDown, accessToken, setAccessToken } = useTaskContext();
 
+    
+    const [newTask, setNewTask] = useState('');
+    const [taskDateTime, setTaskDateTime] = useState('');
+
     const handleInputChange = (event) => {
         setNewTask(event.target.value);
     }
 
     const handleAddTaskClick = () => {
-        addTask(newTask);
+        addTask(newTask, taskDateTime);
         setNewTask('');
+        setTaskDateTime('');
     }
 
     const loginComGoogle = useGoogleLogin({
@@ -75,7 +127,11 @@ function ToDoList() {
         scope: 'https://www.googleapis.com/auth/calendar.events'
     });
 
-    const [newTask, setNewTask] = useState('');
+    const formatarData = (dataString) => {
+        if (!dataString) return '';
+        const data = new Date(dataString);
+        return `${data.toLocaleDateString()} às ${data.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
+    }//deixar um formato bom para data e hora
 
     return (
         <div className="todo-container">
@@ -96,17 +152,31 @@ function ToDoList() {
                     onChange={handleInputChange}
                     placeholder="Digite uma nova tarefa"
                 />
+                <input className='datetime-input'
+                    type = "datetime-local"
+                    value = {taskDateTime}
+                    onChange = {(e) => setTaskDateTime(e.target.value)}
+                />
                 <button className="add-button" onClick={handleAddTaskClick}>Add</button>
             </div>
             <ul className='task-list'>
-                {tasks.map((task, index) => (
+                {tasks.map((task, index) => {
+                    const isObject = typeof task === 'object' && task !== null;
+                    const textoTarefa = isObject ? task.text : task;
+                    const dataTarefa = isObject ? task.dateTime : null;
+                    return (
                     <li key={index}>
+                        <div className="text-content">
+                            <span className="text">{textoTarefa}</span>
+                            {dataTarefa && <span className="task-date">{formatarData(dataTarefa)}</span>}
+                        </div>
                         <span className="text">{task}</span>
                         <button className="up-button" onClick={() => movePriorityUp(index)}>↑</button>
                         <button className="down-button" onClick={() => movePriorityDown(index)}>↓</button>
                         <button className="done-button" onClick={() => deleteTask(index)}>✓</button>
                     </li>
-                ))}
+                );
+            })}
             </ul>
         </div>
     );

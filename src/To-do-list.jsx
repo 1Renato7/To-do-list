@@ -170,7 +170,6 @@ function ToDoList() {
                             <span className="text">{textoTarefa}</span>
                             {dataTarefa && <span className="task-date">{formatarData(dataTarefa)}</span>}
                         </div>
-                        <span className="text">{task}</span>
                         <button className="up-button" onClick={() => movePriorityUp(index)}>↑</button>
                         <button className="down-button" onClick={() => movePriorityDown(index)}>↓</button>
                         <button className="done-button" onClick={() => deleteTask(index)}>✓</button>

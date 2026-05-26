@@ -22,6 +22,7 @@ li {
     width: 300px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 .text {
     flex: 1;

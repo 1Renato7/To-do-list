@@ -20,7 +20,7 @@ export const TaskProvider = ({ children }) => {
     }, [tasks]);
 
     const addCalendarEvent = async (taskText, taskDateTime, token) => {
-        const startTime = taskDateTime ? new Date(taskDateTime).toISOString() : new Date();
+        const startTime = taskDateTime ? new Date(taskDateTime) : new Date();
         const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
         const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -170,9 +170,11 @@ function ToDoList() {
                             <span className="text">{textoTarefa}</span>
                             {dataTarefa && <span className="task-date">{formatarData(dataTarefa)}</span>}
                         </div>
-                        <button className="up-button" onClick={() => movePriorityUp(index)}>↑</button>
-                        <button className="down-button" onClick={() => movePriorityDown(index)}>↓</button>
-                        <button className="done-button" onClick={() => deleteTask(index)}>✓</button>
+                        <div className="button-group">
+                            <button className="up-button" onClick={() => movePriorityUp(index)}>↑</button>
+                            <button className="down-button" onClick={() => movePriorityDown(index)}>↓</button>
+                            <button className="done-button" onClick={() => deleteTask(index)}>✓</button>
+                        </div>
                     </li>
                 );
             })}
